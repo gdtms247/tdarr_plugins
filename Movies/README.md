@@ -9,4 +9,8 @@ PERSONAL_Movie_Process_Step3: Plugin uses GPU to transcode video stream if requi
 PERSONAL_Movie_Process_Post_Step: Plugin will move the video stream to the front so if not already
 
 
-https://github.com/gdtms247/tdarr_plugins/blob/bd1f7b39271ab205a737fba250f3c8d15bae319a/Movies/Movies.png
+
+
+<p align="center">
+  <img src="https://github.com/gdtms247/tdarr_plugins/blob/bd1f7b39271ab205a737fba250f3c8d15bae319a/Movies/Movies.png"/>
+</p>

@@ -1,4 +1,4 @@
-# Movie Library Plugin Stack
+# TV Shows Library Plugin Stack
 
 Plugin stack used to transcode TV show files.
 

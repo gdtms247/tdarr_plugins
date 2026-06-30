@@ -2,7 +2,7 @@
 
 This library preserves UHD video quality while standardizing audio for consistent home theater playback.
 
-Unlike the HD Movie and TV libraries, 4K content is intentionally left as close to the original source as possible. Quality selection is performed upstream by Radarr using custom formats and quality profiles. Tdarr only normalizes audio before passing the file through the shared processing pipeline.
+Unlike the HD Movie and TV libraries, 4K content is intentionally left as close to the original source as possible. Quality selection is performed upstream by Radarr using Custom Formats and Quality Profiles. Tdarr performs only the minimum processing necessary to normalize audio before handing the file to the Shared Processing pipeline.
 
 ## Processing Flow
 
@@ -10,13 +10,23 @@ Unlike the HD Movie and TV libraries, 4K content is intentionally left as close 
 
 ---
 
+# Design Philosophy
+
+- Preserve original UHD video quality.
+- Never transcode compliant video.
+- Standardize surround audio for consistent playback.
+- Keep processing to the absolute minimum.
+- Rely on Radarr for content acquisition and quality selection.
+
+---
+
 # Video Standard
 
 No video transcoding is performed.
 
-The library relies on Radarr to acquire compliant UHD releases.
+The library relies on Radarr to acquire compliant UHD releases through Custom Formats and Quality Profiles.
 
-Video quality is preserved exactly as downloaded.
+Video is preserved exactly as downloaded.
 
 ---
 
@@ -49,24 +59,22 @@ Only a single surround track is retained.
 
 ## Video
 
-- Original UHD video preserved
-- Original resolution preserved
-- Original container preserved until shared MP4 mux processing
+- Original UHD video
+- Original resolution
+- Original HDR / Dolby Vision preserved
+- Original video codec preserved
 
 ## Audio
 
 - Single EAC3 5.1 surround track (preferred)
-- Single AC3 5.1 surround track (accepted when already compliant)
+- Single AC3 5.1 surround track (accepted if already compliant)
 
 ---
 
-# Shared Processing
+# Workflow
 
-Following 4K-specific audio processing, the shared media pipeline performs:
+After 4K audio standardization is complete, the file enters the Shared Processing pipeline for final packaging and library integration.
 
-- File Rename
-- Subtitle Extraction
-- MP4 Mux
-- File Validation
-- Replace Original File
-- Radarr UHD Notification
+See **../Shared/README.md** for the complete shared processing workflow.
+
+Following Shared Processing, the completed file is routed to the appropriate Radarr instance by **FUNCTION_Radarr_Router.js** based on its original library location.

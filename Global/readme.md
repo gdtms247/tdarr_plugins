@@ -1,10 +1,20 @@
 # Shared Processing
 
-These plugins are shared across multiple media workflows and provide a consistent processing pipeline regardless of library type.
+These plugins provide the common processing framework used by every Tdarr media workflow.
 
-Rather than defining media-specific policies, these plugins perform universal preparation, cleanup, standardization, packaging, and naming.
+Unlike the media-specific plugins found in the TV Shows, HD Movies, and 4K Movies folders, these plugins contain no media policy decisions. Their purpose is to prepare, standardize, package, and finalize media in a consistent manner regardless of library type.
 
-The shared pipeline ensures every processed file follows the same library standards before being returned to Sonarr or Radarr.
+Every media workflow eventually passes through this shared processing pipeline before being returned to Sonarr or Radarr.
+
+---
+
+# Design Philosophy
+
+The Shared Processing pipeline is responsible for tasks that should be performed consistently across every media library.
+
+Media-specific decisions such as video quality, audio layout, and bitrate optimization belong to the individual media workflows.
+
+This separation allows processing policies to evolve independently while maintaining consistent library standards.
 
 ---
 
@@ -14,17 +24,17 @@ The first stage of every processing pipeline.
 
 Responsibilities include:
 
-- Validate media integrity
-- Ensure required video and audio streams exist
-- Remove embedded artwork
-- Remove attachment streams
-- Remove data streams
-- Remove non-English audio tracks (preserving ENG/UND)
-- Convert incompatible subtitle formats when required
-- Normalize stream ordering
-- Preserve container and metadata when possible
+- Validate media integrity.
+- Ensure required video and audio streams exist.
+- Remove embedded artwork.
+- Remove attachment streams.
+- Remove data streams.
+- Remove non-English audio tracks (preserving ENG/UND).
+- Convert incompatible subtitle formats when required.
+- Normalize stream ordering.
+- Preserve the original container and metadata whenever possible.
 
-Media validation is treated as a hard requirement. Files missing required streams are intentionally failed to prevent library corruption.
+Media validation is treated as a hard requirement. Files missing required streams intentionally fail processing to prevent library corruption.
 
 ---
 
@@ -32,9 +42,9 @@ Media validation is treated as a hard requirement. Files missing required stream
 
 Standardizes media filenames after processing.
 
-### TV Shows
+## TV Shows
 
-Rebuilds filenames using a normalized structure including:
+Rebuilds filenames using normalized media information including:
 
 - Source
 - Resolution
@@ -42,11 +52,11 @@ Rebuilds filenames using a normalized structure including:
 - Audio channels
 - Video codec
 
-### Movies
+## Movies
 
 Preserves existing release naming while rebuilding media tags.
 
-Removes outdated codec and audio tags before appending current values.
+Removes outdated codec, audio, and channel tags before appending the current media information.
 
 ---
 
@@ -56,23 +66,27 @@ Final packaging stage.
 
 Responsibilities include:
 
-- Extract first English text subtitle
-- Create external SRT sidecar
-- Remove embedded subtitle streams
-- Remove attachment streams
-- Remove data streams
-- Apply hvc1 tag to HEVC media
-- Enable MP4 FastStart
-- Remux to MP4
+- Extract the first English text subtitle.
+- Create an external SRT sidecar.
+- Remove embedded subtitle streams.
+- Remove attachment streams.
+- Remove data streams.
+- Apply the hvc1 tag to HEVC media.
+- Enable MP4 FastStart.
+- Remux media to MP4.
 
-Subtitle sidecars are written beside the final media file rather than the Tdarr working directory.
+Subtitle sidecars are written beside the final media file rather than the Tdarr working directory to ensure they remain with the library.
 
 ---
 
-# Design Philosophy
+# Media Workflow Integration
 
-These plugins intentionally contain no library-specific logic.
+The Shared Processing pipeline is used by:
 
-Media-specific decisions belong to the TV, Movie, and UHD processing policies.
+- TV Shows
+- HD Movies
+- 4K Movies
 
-The shared pipeline exists to provide consistent media preparation, packaging, and library hygiene regardless of media type.
+Each media workflow performs its own media-specific processing before entering the Shared Processing pipeline for final preparation, packaging, and library standardization.
+
+Media-specific documentation can be found in the corresponding workflow folders.

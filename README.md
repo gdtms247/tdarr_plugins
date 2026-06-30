@@ -57,7 +57,7 @@ Rather than applying one processing policy to every file, each media library has
 
 # Repository Structure
 
-## TV Shows
+## [TV Shows](TV%20Shows/)
 
 Television-specific processing policies.
 
@@ -69,7 +69,7 @@ Designed to normalize inconsistent television content while balancing storage ef
 
 ---
 
-## HD Movies
+## [HD Movies](HD%20Movies/)
 
 Standard HD movie processing.
 
@@ -81,7 +81,7 @@ Designed to preserve the cinematic experience while maximizing playback compatib
 
 ---
 
-## 4K Movies
+## [4K Movies](4K%20Movies/)
 
 Ultra HD movie processing.
 
@@ -91,7 +91,7 @@ Designed to preserve UHD video quality while normalizing surround audio.
 
 ---
 
-## Global
+## [Global](Global/)
 
 Reusable processing framework shared across every media workflow.
 

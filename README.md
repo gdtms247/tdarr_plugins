@@ -2,86 +2,52 @@
 
 A collection of personal Tdarr plugins and Flows used to standardize television and movie libraries for long-term Plex compatibility.
 
-The goal of this project is not to transcode everything, but to transcode **only when it improves the library**. Media acquisition, quality selection, and release preference are handled upstream by Sonarr and Radarr. Tdarr then normalizes the downloaded media into predictable playback standards while preserving as much of the original quality as possible.
+The objective of this project is simple:
+
+> **Transcode as little as possible while standardizing as much as necessary.**
+
+Media acquisition and quality selection are intentionally performed upstream by Sonarr and Radarr. Tdarr is responsible for transforming downloaded media into predictable playback standards while preserving as much of the original quality as possible.
 
 ---
 
 # Design Philosophy
 
-The library is built around four guiding principles:
+This project is built around five guiding principles.
 
-- **Preserve quality whenever possible.**
-- **Avoid unnecessary transcoding.**
-- **Maximize Direct Play compatibility across Plex clients.**
-- **Maintain a single standardized copy of every movie and episode.**
+- Preserve quality whenever possible.
+- Avoid unnecessary transcoding.
+- Maximize Plex Direct Play compatibility.
+- Maintain a single standardized copy of every movie and episode.
+- Separate media acquisition from media normalization.
 
 Rather than applying one processing policy to every file, each media library has its own workflow optimized for its intended purpose.
 
 ---
 
-# Repository Structure
+# Architecture
 
 ```
-TV Shows/
-```
-
-Television-specific processing policies.
-
-- TV Optimized
-- TV Standard
-- Sonarr Tag Router
-
----
-
-```
-HD Movies/
-```
-
-Standard HD movie processing.
-
-- HD Movie Video
-- HD Movie Audio
-- Radarr Router
-
----
-
-```
-4K Movies/
-```
-
-UHD movie processing focused on preserving premium video quality.
-
-- 4K Audio Standardization
-
----
-
-```
-Shared/
-```
-
-Common processing framework used by every media workflow.
-
-- Media Preparation
-- Rename
-- Subtitle Extraction & MP4 Mux
-
----
-
-# Processing Architecture
-
-```
-                Sonarr / Radarr
+                     Internet
+                         │
+                         ▼
+               Sonarr / Radarr
+         (Quality Selection & Acquisition)
+                         │
+                         ▼
+               Tdarr Media Policies
+      ┌────────────────┬────────────────┐
+      │                │                │
+      ▼                ▼                ▼
+ TV Shows         HD Movies        4K Movies
+      │                │                │
+      └────────────────┴────────────────┘
                        │
                        ▼
-           Media-specific Processing
-        (TV / HD Movies / 4K Movies)
-                       │
-                       ▼
-            Shared Processing Pipeline
+            Global Processing Pipeline
       (Preparation → Rename → Packaging)
                        │
                        ▼
-              Sonarr / Radarr Notify
+             Sonarr / Radarr Notify
                        │
                        ▼
                      Plex
@@ -89,8 +55,115 @@ Common processing framework used by every media workflow.
 
 ---
 
-# Media Workflows
+# Repository Structure
 
+## TV Shows
+
+Television-specific processing policies.
+
+- TV Optimized
+- TV Standard
+- Sonarr Tag Router
+
+Designed to normalize inconsistent television content while balancing storage efficiency and playback quality.
+
+---
+
+## HD Movies
+
+Standard HD movie processing.
+
+- HD Movie Video
+- HD Movie Audio
+- Radarr Router
+
+Designed to preserve the cinematic experience while maximizing playback compatibility.
+
+---
+
+## 4K Movies
+
+Ultra HD movie processing.
+
+- 4K Audio Standardization
+
+Designed to preserve UHD video quality while normalizing surround audio.
+
+---
+
+## Global
+
+Reusable processing framework shared across every media workflow.
+
+- Media Preparation
+- Rename
+- Subtitle Extraction & MP4 Mux
+
+Provides consistent library preparation, packaging, and media standardization regardless of library type.
+
+---
+
+# Processing Responsibilities
+
+Each application in the media pipeline has a clearly defined responsibility.
+
+## Sonarr / Radarr
+
+Responsible for:
+
+- Library management
+- Quality Profiles
+- Custom Formats
+- Release selection
+- Metadata
+- Downloads
+
+## Tdarr
+
+Responsible for:
+
+- Media normalization
+- Codec standardization
+- Audio standardization
+- Subtitle extraction
+- Container optimization
+- File naming
+- Library consistency
+
+## Plex
+
+Responsible for:
+
+- Library presentation
+- Direct Play
+- Client compatibility
+- Media streaming
+
+This separation allows each application to do what it does best while minimizing unnecessary media processing.
+
+---
+
+# Media Policies
+
+Every library intentionally follows a different processing policy.
+
+| Library | Primary Goal |
+|---------|--------------|
+| **TV Shows** | Normalize inconsistent media while balancing quality and storage efficiency. |
+| **HD Movies** | Preserve the cinematic experience while maximizing playback compatibility. |
+| **4K Movies** | Preserve premium UHD video quality while standardizing surround audio. |
+
+---
+
+# Why This Repository Exists
+
+These plugins were built over several years as my media library evolved from a collection of independent Tdarr plugins into a modular processing framework built around Tdarr Flows.
+
+The code is heavily inspired by the incredible Tdarr community. Nearly every plugin contains ideas, techniques, or examples learned from other users and adapted to fit my own media standards.
+
+Hopefully these plugins—and more importantly the documentation behind them—help others build media workflows that match their own libraries.
+
+Happy transcoding!
 ## TV Shows
 
 Designed to normalize highly inconsistent television content.

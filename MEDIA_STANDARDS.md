@@ -2,238 +2,306 @@
 
 This document defines the expected output of every media workflow.
 
-If plugin behavior ever changes, this document should be updated first.
+If plugin behavior changes, this document should be updated before modifying any implementation.
 
-The goal is to document *what* the library should look like rather than *how* Tdarr currently accomplishes it.
+The purpose of this document is to define **what the media library should look like**, not how Tdarr currently implements those standards.
 
 ---
 
 # Global Standards
 
+These standards apply to every media workflow.
+
 ## Container
 
-MP4
+- Final library container is MP4.
+- MP4 FastStart is enabled.
+- HEVC media receives the `hvc1` compatibility tag.
 
 ## Subtitle Strategy
 
-English text subtitles extracted to external SRT.
+- Extract the first compatible English text subtitle to an external `.en.srt` sidecar.
+- Remove all embedded subtitle streams from the media container.
+- If no compatible English text subtitle exists, no subtitle sidecar is created.
+- Image-based subtitles (PGS, VobSub, etc.) are not preserved.
 
-Embedded subtitle streams removed.
+## Audio Languages
 
-Image-based subtitles are ignored.
-
-## Language
-
-English (ENG) and Undefined (UND) retained.
-
-All other audio languages removed.
+- Retain English (`ENG`) and Undefined (`UND`) audio streams.
+- Remove all other audio languages.
 
 ## Metadata
 
-Attachments removed.
+- Remove embedded artwork.
+- Remove attachment streams.
+- Remove data streams.
+- Remove chapter information during final MP4 mux.
+- Preserve media metadata whenever possible.
 
-Embedded artwork removed.
+## Media Validation
 
-Data streams removed.
+Every file must contain:
 
-Chapters removed during final MP4 mux.
+- At least one video stream.
+- At least one audio stream.
+
+Files failing validation intentionally fail processing to prevent corrupt media from entering the library.
 
 ---
 
 # TV Optimized
 
-Purpose
+## Purpose
 
-Storage efficiency.
+Normalize television content for maximum storage efficiency and Direct Play compatibility.
 
-## Video
+## Video Standard
 
-Supported
+### Supported Codecs
 
-- H264
+- H.264
 - HEVC
 
-Unsupported codecs
+### Unsupported Codecs
 
-→ HEVC
+Convert to:
 
-Resolution-aware bitrate targets.
+- HEVC
 
-Only oversized files are transcoded.
+### Processing Rules
 
-## Audio
+- Resolution-aware bitrate optimization.
+- Only oversized encodes are transcoded.
+- Original resolution is preserved.
 
-Single AAC 2.0
+## Audio Standard
 
-No surround retained.
+Output is standardized to:
 
-## Output
+- AAC 2.0
 
-Container
+No surround audio is retained.
 
-MP4
+## Expected Output
 
-Audio
-
-AAC 2.0
+| Category | Standard |
+|----------|----------|
+| Container | MP4 |
+| Video | H.264 or HEVC |
+| Audio | AAC 2.0 |
 
 ---
 
 # TV Standard
 
-Purpose
+## Purpose
 
-Preserve playback quality.
+Normalize television content while preserving playback quality.
 
-## Video
+## Video Standard
 
-Supported
+### Supported Codecs
 
-- H264
+- H.264
 - HEVC
 
-Higher bitrate thresholds.
+### Unsupported Codecs
 
-## Audio
+Convert to:
 
-720+
+- HEVC
 
-AC3 5.1
+### Processing Rules
 
-AAC 2.0
+- Higher bitrate thresholds than TV Optimized.
+- Resolution-aware bitrate optimization.
+- Original resolution is preserved.
 
-SD
+## Audio Standard
 
-AAC 2.0
+### HD Content (720p+)
+
+- AC3 5.1
+- AAC 2.0
+
+### SD Content (<720p)
+
+- AAC 2.0
+
+Surround audio is preserved whenever available while ensuring a stereo fallback.
+
+## Expected Output
+
+| Category | Standard |
+|----------|----------|
+| Container | MP4 |
+| Video | H.264 or HEVC |
+| Audio (HD) | AC3 5.1 + AAC 2.0 |
+| Audio (SD) | AAC 2.0 |
 
 ---
 
 # HD Movies
 
-Purpose
+## Purpose
 
-Preserve cinematic experience.
+Preserve the cinematic experience while maximizing playback compatibility.
 
-## Video
+## Video Standard
 
-Keep
+### Preserve
 
-H264
+- H.264
+- HEVC
 
-HEVC
+### Convert
 
-Convert
+Modern codecs:
 
-AV1
+- AV1
+- VP9
 
-VP9
+Legacy codecs:
 
-Legacy codecs
+- MPEG2
+- VC-1
+- WMV
+- Other unsupported legacy formats
 
-Original resolution preserved.
+Original resolution is always preserved.
 
-## Audio
+## Audio Standard
 
-AC3 5.1
+Output is standardized to:
 
-AAC 2.0 fallback
+- AC3 5.1
+- AAC 2.0 stereo fallback
+
+Compatible audio is copied whenever possible.
+
+## Expected Output
+
+| Category | Standard |
+|----------|----------|
+| Container | MP4 |
+| Video | H.264 or HEVC |
+| Audio | AC3 5.1 + AAC 2.0 |
 
 ---
 
 # 4K Movies
 
-Purpose
+## Purpose
 
-Preserve UHD quality.
+Preserve premium UHD video quality while standardizing surround audio.
 
-## Video
+## Video Standard
 
-Never transcoded.
+- Never transcoded.
+- Original resolution preserved.
+- HDR preserved.
+- HDR10+ preserved.
+- Dolby Vision preserved.
 
-HDR preserved.
+## Audio Standard
 
-Dolby Vision preserved.
+Output is standardized to a single surround track.
 
-## Audio
+### Preferred
 
-Single surround track.
+- EAC3 5.1
 
-Preferred
+### Accepted
 
-EAC3 5.1
+- AC3 5.1
 
-Accepted
+### Processing Rules
 
-AC3 5.1
+- Keep one surround track.
+- Normalize all surround audio to 5.1.
+- Remove all additional audio tracks.
+- Do not create a stereo fallback.
 
-No stereo generated.
+## Expected Output
+
+| Category | Standard |
+|----------|----------|
+| Container | MP4 |
+| Video | Original UHD Video |
+| Audio | Single EAC3 5.1 (Preferred) / AC3 5.1 (Accepted) |
 
 ---
 
-# Shared Processing
+# Global Processing Pipeline
 
-Every workflow performs:
+Every workflow performs the same final processing sequence.
 
-Media Preparation
-
-↓
-
-Rename
-
-↓
-
-Subtitle Extraction
-
-↓
-
-MP4 Mux
-
-↓
-
-Library Notification
+1. Media Preparation
+2. File Rename
+3. Subtitle Extraction & MP4 Mux
+4. Media Validation
+5. Replace Original File
+6. Sonarr / Radarr Notification
 
 ---
 
 # Naming Standards
 
-TV
+## TV Shows
 
-Series.S01E01.WEBDL-1080p[h265][AAC][2.0]
+```
+Series Name S01E01 WEBDL-1080p [AAC][2.0][h265]
+```
 
-Movies
+## Movies
 
-Movie (2024) [HDR10][EAC3][5.1][h265]-GROUP
+```
+Movie Name (2024) [HDR10][EAC3][5.1][h265]-GROUP
+```
 
 ---
 
 # Design Decisions
 
-These are intentional decisions.
+These behaviors are intentional and define the long-term architecture of the media library.
 
 ## Why TV has two workflows
 
-Storage requirements differ greatly between shared television libraries and personal libraries.
+Shared television libraries prioritize storage efficiency.
+
+Personal television libraries prioritize playback quality.
 
 ## Why Movies are less aggressive
 
-Radarr already performs quality selection.
+Radarr performs quality selection before Tdarr processes media.
 
-Tdarr focuses on compatibility.
+Tdarr focuses on compatibility and normalization rather than quality selection.
 
-## Why 4K has no video plugin
+## Why 4K has no video processing
 
-Video quality is intentionally preserved.
+Premium UHD releases are intentionally preserved exactly as downloaded.
 
-Audio normalization provides the largest compatibility improvement with the least quality loss.
+Audio normalization provides the largest compatibility improvement with the smallest quality impact.
 
 ## Why MP4
 
-Maximum client compatibility.
+Provides the broadest playback compatibility across Plex clients and hardware devices.
 
 ## Why external subtitles
 
-Reduces container complexity while improving client compatibility.
+External SRT subtitles simplify media containers while providing excellent client compatibility.
 
-## Why one standardized copy
+## Why a single standardized copy
 
-Maintaining a single version of each title greatly simplifies storage, maintenance, and playback.
+Maintaining a single version of every movie and episode dramatically simplifies storage management, library maintenance, backups, and playback consistency.
+
+## Non-Goals
+
+The following are intentional design decisions.
+
+- Do not maintain multiple versions of the same title.
+- Do not preserve embedded subtitle streams.
+- Do not preserve multiple audio languages.
+- Do not artificially create surround audio.
+- Do not transcode media unless required to meet library standards.
+- Do not increase video quality through transcoding.

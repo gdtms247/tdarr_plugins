@@ -17,3 +17,7 @@ This library contains two processing policies.
 - AC3 5.1 + AAC 2.0
 
 - Better home theater support
+
+## Processing Flow
+
+![TV Shows Flow](flow_tv.png)

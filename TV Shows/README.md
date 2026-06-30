@@ -20,4 +20,4 @@ This library contains two processing policies.
 
 ## Processing Flow
 
-![TV Shows Flow](flow_tv.png)
+![TV Flow](tv_flow.png)

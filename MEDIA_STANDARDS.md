@@ -267,9 +267,12 @@ These behaviors are intentional and define the long-term architecture of the med
 
 ## Why TV has two workflows
 
-Shared television libraries prioritize storage efficiency.
+TV processing is selected per series using Sonarr tags.
 
-Personal television libraries prioritize playback quality.
+- **TV Optimized** is used when storage efficiency is the priority.
+- **TV Standard** is used when preserving higher quality audio and less aggressive video optimization is preferred.
+
+This allows different shows to follow different media policies without maintaining separate libraries.
 
 ## Why Movies are less aggressive
 

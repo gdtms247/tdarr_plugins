@@ -2,7 +2,7 @@
 
 This library standardizes HD movies for broad playback compatibility while preserving the cinematic experience.
 
-Unlike the TV libraries, movie optimization prioritizes compatibility and audio preservation over aggressive storage reduction.
+Unlike the TV library, HD Movies are curated upstream through Radarr using Custom Formats and Quality Profiles. Tdarr primarily serves as a compatibility and normalization layer rather than aggressively optimizing media.
 
 ## Processing Flow
 
@@ -10,25 +10,37 @@ Unlike the TV libraries, movie optimization prioritizes compatibility and audio 
 
 ---
 
+# Design Philosophy
+
+- Preserve the cinematic viewing experience.
+- Standardize audio for consistent playback.
+- Convert only unsupported video codecs.
+- Minimize unnecessary transcoding.
+- Rely on Radarr for content acquisition and quality selection.
+
+---
+
 # Video Standard
 
 ## Supported Codecs
 
-No processing is performed for:
+The following codecs are considered compliant and are left unchanged:
 
 - H.264 / AVC
 - HEVC / H.265
 
 ## Unsupported Modern Codecs
 
-The following codecs are transcoded to HEVC using Intel Quick Sync:
+Modern codecs not universally supported are converted to HEVC using Intel Quick Sync.
+
+Examples include:
 
 - AV1
 - VP9
 
 ## Legacy Codecs
 
-Legacy codecs are transcoded to H.264 using Intel Quick Sync.
+Legacy codecs are converted to H.264 using Intel Quick Sync.
 
 Examples include:
 
@@ -37,17 +49,22 @@ Examples include:
 - WMV
 - Other unsupported legacy formats
 
-All audio and subtitle streams are preserved during video transcoding.
+During video processing:
+
+- Original resolution is preserved.
+- Audio streams are preserved.
+- Subtitle streams are preserved.
+- Container changes are deferred to the Shared Processing pipeline.
 
 ---
 
 # Audio Standard
 
-Movie audio is normalized for consistent playback while preserving surround sound whenever possible.
+Movie audio is standardized for consistent playback while preserving surround sound whenever possible.
 
 ## Surround Audio
 
-Existing surround tracks are standardized to AC3.
+Surround tracks are normalized to AC3.
 
 - 6+ channel → AC3 5.1
 - 4–5 channel → AC3
@@ -76,7 +93,7 @@ If no stereo track exists, an AAC 2.0 stereo track is automatically created from
 
 - H.264 or HEVC
 - Original resolution preserved
-- Original container preserved
+- Original video quality preserved whenever possible
 
 ## Audio
 
@@ -86,11 +103,10 @@ If no stereo track exists, an AAC 2.0 stereo track is automatically created from
 
 ---
 
-# Shared Processing
+# Workflow
 
-Following movie-specific processing, the shared media pipeline performs:
+After HD Movie processing is complete, the file enters the Shared Processing pipeline for final packaging and library integration.
 
-- Subtitle Extraction
-- Stream Hygiene
-- MP4 Mux
-- Library Notification
+See **../Shared/README.md** for the complete shared processing workflow.
+
+Following Shared Processing, the completed file is routed to the appropriate Radarr instance by **FUNCTION_Radarr_Router.js** based on its original library location.
